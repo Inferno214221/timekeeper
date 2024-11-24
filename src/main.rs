@@ -6,9 +6,7 @@ use dioxus::desktop::{tao, Config};
 
 fn main() {
     // TODO: add cli args
-    // Init logger
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
-    // dioxus::launch(App);
 
     let window = tao::window::WindowBuilder::new()
         .with_title("Simple Stopwatch")
@@ -21,6 +19,7 @@ fn main() {
             .with_window(window)
             .with_menu(None)
     ).launch(App);
+    // dioxus::launch(App);
 }
 
 enum TimerMode {
@@ -51,7 +50,7 @@ fn Stopwatch() -> Element {
     let mut input_digits = use_signal(|| 0_u64);
     let mut runner: Signal<Option<Task>> = use_signal(|| None);
 
-    let on_start_pause = move |_| {
+    let mut on_start_pause = move || {
         let mut runner_write = runner.write();
         if let Some(val) = *runner_write {
             if val.paused() {
@@ -81,17 +80,28 @@ fn Stopwatch() -> Element {
                     let mut digits_write = input_digits.write();
                     *digits_write = *digits_write * 10 + digit as u64;
                     // TODO: use checked mul
-                    initial_dur.set(dur_from_str(&format_digits(*digits_write)).unwrap());
-                    dur.set(*initial_dur.peek());
+                    let digits_dur = dur_from_str(&format_digits(*digits_write)).unwrap();
+                    initial_dur.set(digits_dur);
+                    dur.set(digits_dur);
                 }
             },
             Key::Backspace => {
                 input_digits /= 10;
-                initial_dur.set(dur_from_str(&format_digits(*input_digits.peek())).unwrap());
-                dur.set(*initial_dur.peek());
+                let digits_dur = dur_from_str(&format_digits(*input_digits.peek())).unwrap();
+                initial_dur.set(digits_dur);
+                dur.set(digits_dur);
             },
-            Key::Enter => todo!(),
+            Key::Enter => on_start_pause(),
             _ => ()
+        }
+    };
+
+    let mut on_reset = move || {
+        dur.set(*initial_dur.peek());
+        let mut runner_write = runner.write();
+        if let Some(val) = *runner_write {
+            val.cancel();
+            *runner_write = None;
         }
     };
 
@@ -103,14 +113,10 @@ fn Stopwatch() -> Element {
                 autofocus: true,
                 id: "time-display",
                 role: "textbox",
-                contenteditable: true,
-                onkeyup: on_input_update,
-                oninput: move |_| {
-                    dur.set(*initial_dur.peek());
-                    if runner.peek().is_none() { return; }
-                    runner.set(None);
-                },
-                { format_dur(dur()) }
+                tabindex: 0,
+                onkeydown: on_input_update,
+                oninput: move |_| on_reset(), // TODO: move focus to end with js
+                span { { format_dur(dur()) } }
             }
         }
         // TODO: show state
@@ -118,7 +124,7 @@ fn Stopwatch() -> Element {
             class: "centered",
             button {
                 class: "mat-icon",
-                onclick: on_start_pause,
+                onclick: move |_| on_start_pause(),
                 if runner().is_none_or(|r| r.paused()) {
                     "play_arrow"
                 } else {
@@ -127,11 +133,7 @@ fn Stopwatch() -> Element {
             }
             button {
                 class: "mat-icon",
-                onclick: move |_| {
-                    if runner.peek().is_none() { return; }
-                    runner.set(None);
-                    dur.set(*initial_dur.peek());
-                },
+                onclick: move |_| on_reset(),
                 "replay"
             }
         }
