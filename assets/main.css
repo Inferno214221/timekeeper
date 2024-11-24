@@ -26,6 +26,7 @@
 
 body {
     background-color: var(--inf-grey4);
+    color: var(--inf-white3);
     margin: 0;
     height: 100vh;
 }
@@ -43,4 +44,24 @@ body {
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
+}
+
+#time-display {
+    text-align: right;
+    font-size: 20pt;
+    background-color: transparent;
+    border: none;
+    color: var(--inf-white3);
+    /* field-sizing: content; */
+    margin-bottom: 2px;
+}
+
+#time-display:focus {
+    outline: none;
+    border-bottom: 2px solid var(--inf-blue1);
+    margin-bottom: 0px;
+}
+
+#main-display {
+    margin-bottom: 10px;
 }
