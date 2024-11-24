@@ -47,21 +47,54 @@ body {
 }
 
 #time-display {
-    text-align: right;
+    text-align: center;
     font-size: 20pt;
-    background-color: transparent;
-    border: none;
+    background-color: var(--inf-grey5);
     color: var(--inf-white3);
-    /* field-sizing: content; */
+    border: none;
     margin-bottom: 2px;
+    width: max-content;
+    min-width: 120px;
+    border-radius: 5px;
 }
 
 #time-display:focus {
     outline: none;
     border-bottom: 2px solid var(--inf-blue1);
     margin-bottom: 0px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 #main-display {
     margin-bottom: 10px;
 }
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://fonts.gstatic.com/s/materialicons/v140/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
+
+.mat-icon {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    user-select: none;
+}
+
+button.mat-icon {
+    background-color: transparent;
+    color: var(--inf-white3);
+    border: none;
+    font-size: 20pt;
+}
+
+/* TODO: button.mat-icon:hover */

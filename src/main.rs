@@ -2,12 +2,25 @@ use tokio::time::{self, Duration, MissedTickBehavior};
 
 use dioxus::prelude::*;
 use dioxus_logger::tracing::{info, Level};
+use dioxus::desktop::{tao, Config};
 
 fn main() {
+    // TODO: add cli args
     // Init logger
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
-    dioxus::launch(App);
-    // TODO: add cli args
+    // dioxus::launch(App);
+
+    let window = tao::window::WindowBuilder::new()
+        .with_title("Simple Stopwatch")
+        .with_resizable(true)
+        .with_inner_size(tao::dpi::LogicalSize::new(200.0, 120.0))
+        .with_min_inner_size(tao::dpi::LogicalSize::new(200.0, 120.0));
+
+    LaunchBuilder::new().with_cfg(
+        Config::new()
+            .with_window(window)
+            .with_menu(None)
+    ).launch(App);
 }
 
 enum TimerMode {
@@ -19,9 +32,10 @@ enum TimerMode {
 #[component]
 fn App() -> Element {
     let mode = use_signal(|| TimerMode::Stopwatch);
+    // TODO: change window name based on mode
 
     rsx! {
-        style { {include_str!("../assets/main.css")} }
+        style {{ include_str!("../assets/main.css") }}
         link { rel: "stylesheet", href: "main.css" }
         match *mode.read() {
             TimerMode::Timer => None,
@@ -35,7 +49,6 @@ fn Stopwatch() -> Element {
     let mut initial_dur = use_signal(|| Duration::ZERO);
     let mut dur = use_signal(|| *initial_dur.peek());
     let mut input_digits = use_signal(|| 0_u64);
-    // let mut display_dur = use_signal(|| format_dur(dur()));
     let mut runner: Signal<Option<Task>> = use_signal(|| None);
 
     let on_start_pause = move |_| {
@@ -54,14 +67,12 @@ fn Stopwatch() -> Element {
                 loop {
                     interval.tick().await;
                     dur += Duration::from_secs(1);
-                    // display_dur.set(format_dur(*dur.peek()));
                 }
             }));
         }
     };
 
     let on_input_update = move |event: Event<KeyboardData>| {
-        info!("{:?}", char::from_u32(event.key().legacy_charcode()));
         match event.key() {
             Key::Character(character) => {
                 let first = character.chars().next();
@@ -70,14 +81,12 @@ fn Stopwatch() -> Element {
                     let mut digits_write = input_digits.write();
                     *digits_write = *digits_write * 10 + digit as u64;
                     // TODO: use checked mul
-                    // display_dur.set(format_digits(*digits_write));
                     initial_dur.set(dur_from_str(&format_digits(*digits_write)).unwrap());
                     dur.set(*initial_dur.peek());
                 }
             },
             Key::Backspace => {
                 input_digits /= 10;
-                // display_dur.set(format_digits(*input_digits.peek()));
                 initial_dur.set(dur_from_str(&format_digits(*input_digits.peek())).unwrap());
                 dur.set(*initial_dur.peek());
             },
@@ -90,34 +99,40 @@ fn Stopwatch() -> Element {
         div {
             id: "main-display",
             class: "centered",
-            input {
+            div {
                 autofocus: true,
                 id: "time-display",
-                r#type: "text",
-                value: format_dur(dur()),
+                role: "textbox",
+                contenteditable: true,
                 onkeyup: on_input_update,
                 oninput: move |_| {
+                    dur.set(*initial_dur.peek());
                     if runner.peek().is_none() { return; }
                     runner.set(None);
-                    dur.set(*initial_dur.peek());
-                }
+                },
+                { format_dur(dur()) }
             }
         }
         // TODO: show state
         div {
             class: "centered",
             button {
+                class: "mat-icon",
                 onclick: on_start_pause,
-                // TODO: use icons
-                "Resume/Pause"
+                if runner().is_none_or(|r| r.paused()) {
+                    "play_arrow"
+                } else {
+                    "pause"
+                }
             }
             button {
+                class: "mat-icon",
                 onclick: move |_| {
                     if runner.peek().is_none() { return; }
                     runner.set(None);
                     dur.set(*initial_dur.peek());
                 },
-                "Reset"
+                "replay"
             }
         }
     }
