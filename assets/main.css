@@ -1,0 +1,46 @@
+:root {
+    /* My Palette */
+    /* Titlebar */
+    --inf-grey1: #16171e;
+    /* Side-est-bar */
+    --inf-grey2: #1a1c23;
+    /* Sidebar */
+    --inf-grey3: #23252e;
+    /* Body */
+    --inf-grey4: #272a34;
+    /* Buttons */
+    --inf-grey5: #323643;
+
+    /* Primary Blue */
+    --inf-blue1: #2777ff;
+    /* Secondary Blue */
+    --inf-blue2: #005af3;
+
+    /* Text */
+    --inf-white3: #eeeeec;
+    /* Sidebar Icons */
+    --inf-white2: #bbbbbd;
+    /* Inactive (Used with sidebar) */
+    --inf-white1: #888a8d;
+}
+
+body {
+    background-color: var(--inf-grey4);
+    margin: 0;
+    height: 100vh;
+}
+
+#main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: "Ubuntu";
+}
+
+.centered {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
