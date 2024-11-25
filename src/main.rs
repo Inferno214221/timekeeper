@@ -13,7 +13,7 @@ use app::App;
 fn main() {
     // dioxus_logger::init(Level::INFO).expect("Logger initialisation failed");
     const MIN_SIZE: tao::dpi::LogicalSize<u32> =
-        tao::dpi::LogicalSize::new(200, 160);
+        tao::dpi::LogicalSize::new(200, 140);
 
     let window = tao::window::WindowBuilder::new()
         .with_title("Simple Stopwatch")
