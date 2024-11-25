@@ -12,4 +12,5 @@ dioxus = { version = "0.5", features = ["desktop"] }
 
 # Debug
 dioxus-logger = "0.5.1"
+soloud = "1.0.5"
 tokio = { version = "1.41.1", features = ["full"] }

@@ -1,4 +1,5 @@
 use tokio::time::{self, Duration, MissedTickBehavior};
+use soloud::*;
 
 use dioxus::prelude::*;
 use dioxus_logger::tracing::{info, Level};
@@ -22,35 +23,87 @@ fn main() {
     // dioxus::launch(App);
 }
 
+#[derive(Clone, Copy, PartialEq)]
 enum TimerMode {
     Timer,
     Stopwatch,
     // Alarm
 }
 
-#[component]
-fn App() -> Element {
-    let mode = use_signal(|| TimerMode::Stopwatch);
-    // TODO: change window name based on mode
+impl TimerMode {
+    fn default_dur(&self) -> Duration {
+        match *self {
+            TimerMode::Timer => Duration::from_secs(5 * 60),
+            TimerMode::Stopwatch => Duration::ZERO,
+        }
+    }
 
-    rsx! {
-        style {{ include_str!("../assets/main.css") }}
-        link { rel: "stylesheet", href: "main.css" }
-        match *mode.read() {
-            TimerMode::Timer => None,
-            TimerMode::Stopwatch => Stopwatch()
+    fn default_digits(&self) -> u64 {
+        match *self {
+            TimerMode::Timer => 500,
+            TimerMode::Stopwatch => 0,
         }
     }
 }
 
 #[component]
-fn Stopwatch() -> Element {
-    let mut initial_dur = use_signal(|| Duration::ZERO);
-    let mut dur = use_signal(|| *initial_dur.peek());
-    let mut input_digits = use_signal(|| 0_u64);
-    let mut runner: Signal<Option<Task>> = use_signal(|| None);
+fn App() -> Element {
+    let mode = use_signal(|| TimerMode::Timer);
+    // TODO: change window name based on mode
 
-    let mut on_start_pause = move || {
+    rsx! {
+        style {
+            { include_str!("../assets/main.css") }
+        }
+        StopwatchTimer {
+            mode: *mode.read()
+        }
+    }
+}
+
+#[component]
+fn StopwatchTimer(mode: TimerMode) -> Element {
+    let mut initial_dur = use_signal(|| mode.default_dur());
+    let mut dur = use_signal(|| *initial_dur.peek());
+    let mut input_digits = use_signal(|| mode.default_digits());
+    let mut runner: Signal<Option<Task>> = use_signal(|| None);
+    let mut alarm: Signal<Option<Task>> = use_signal(|| None);
+
+    // A lot of closures are requried because they all need to capture values
+
+    let mut stop_alarm = move || {
+        let mut alarm_write = alarm.write();
+        if let Some(val) = *alarm_write {
+            val.cancel();
+            *alarm_write = None;
+        }
+    };
+
+    let mut start_alarm = move || {
+        alarm.set(Some(spawn(async move {
+            let sl = Soloud::default().unwrap();
+            let mut wav = audio::Wav::default();
+            wav.load_mem(include_bytes!("../assets/alarm.oga")).unwrap();
+
+            sl.play(&wav);
+            let mut interval = time::interval(Duration::from_millis(100));
+            while sl.voice_count() > 0 {
+                interval.tick().await;
+            }
+            stop_alarm();
+        })));
+    };
+
+    let mut reset = move || {
+        dur.set(*initial_dur.peek());
+        let mut runner_write = runner.write();
+        if let Some(val) = *runner_write {
+            val.cancel();
+            *runner_write = None;
+        }
+    };
+
+    let mut start_pause = move || {
         let mut runner_write = runner.write();
         if let Some(val) = *runner_write {
             if val.paused() {
@@ -65,13 +118,26 @@ fn Stopwatch() -> Element {
                 interval.tick().await;
                 loop {
                     interval.tick().await;
-                    dur += Duration::from_secs(1);
+                    match mode {
+                        TimerMode::Timer => {
+                            dur -= Duration::from_secs(1);
+                            if dur.peek().as_secs() == 0 {
+                                if alarm.peek().is_none() {
+                                    start_alarm();
+                                }
+                                reset();
+                            }
+                        },
+                        TimerMode::Stopwatch => {
+                            dur += Duration::from_secs(1);
+                        },
+                    };
                 }
             }));
         }
     };
 
-    let on_input_update = move |event: Event<KeyboardData>| {
+    let update_input = move |event: Event<KeyboardData>| {
         match event.key() {
             Key::Character(character) => {
                 let first = character.chars().next();
@@ -91,17 +157,8 @@ fn Stopwatch() -> Element {
                 initial_dur.set(digits_dur);
                 dur.set(digits_dur);
             },
-            Key::Enter => on_start_pause(),
+            Key::Enter => start_pause(),
             _ => ()
-        }
-    };
-
-    let mut on_reset = move || {
-        dur.set(*initial_dur.peek());
-        let mut runner_write = runner.write();
-        if let Some(val) = *runner_write {
-            val.cancel();
-            *runner_write = None;
         }
     };
 
@@ -114,17 +171,16 @@ fn Stopwatch() -> Element {
                 id: "time-display",
                 role: "textbox",
                 tabindex: 0,
-                onkeydown: on_input_update,
-                oninput: move |_| on_reset(), // TODO: move focus to end with js
+                onkeydown: update_input,
+                oninput: move |_| reset(),
                 span { { format_dur(dur()) } }
             }
         }
-        // TODO: show state
         div {
             class: "centered",
             button {
                 class: "mat-icon",
-                onclick: move |_| on_start_pause(),
+                onclick: move |_| start_pause(),
                 if runner().is_none_or(|r| r.paused()) {
                     "play_arrow"
                 } else {
@@ -133,7 +189,7 @@ fn Stopwatch() -> Element {
             }
             button {
                 class: "mat-icon",
-                onclick: move |_| on_reset(),
+                onclick: move |_| reset(),
                 "replay"
             }
         }
