@@ -29,15 +29,24 @@ body {
     color: var(--inf-white3);
     margin: 0;
     height: 100vh;
+    font-family: "Ubuntu";
 }
 
 #main {
     height: 100%;
     display: flex;
     flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+}
+
+#stopwatch-timer {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-family: "Ubuntu";
+    margin-bottom: 30px;
 }
 
 .centered {
@@ -122,4 +131,38 @@ button.mat-icon {
 
 button.mat-icon:hover {
     background-color: var(--inf-grey4);
+}
+
+#mode-radio {
+    height: fit-content;
+    margin: 15px 0px;
+}
+
+#mode-radio label {
+    margin-left: 1px;
+    margin-right: 1px;
+    padding: 5px;
+}
+
+#mode-radio input:checked+label {
+    background-color: var(--inf-grey5);
+    border: black 1px solid;
+    border-radius: 5px;
+    box-shadow: 0px 1px #00000088;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+input[type="radio"] {
+    display: none;
+}
+
+#mode-radio span {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#mode-radio span.mat-icon {
+    font-size: large;
+    margin-right: 2px;
 }

@@ -1,33 +1,36 @@
+use std::str::FromStr;
+
 use tokio::time::{self, Duration, MissedTickBehavior};
 use soloud::*;
+use derive_more::derive::{Display, Error};
 
 use dioxus::prelude::*;
 use dioxus_logger::tracing::{info, Level};
-use dioxus::desktop::{tao, Config};
+use dioxus::desktop::{self, tao, Config};
 
 fn main() {
     // TODO: add cli args
-    dioxus_logger::init(Level::INFO).expect("failed to init logger");
+    dioxus_logger::init(Level::INFO).expect("Logger initialisation failed");
+    const MIN_SIZE: tao::dpi::LogicalSize<u32> =
+        tao::dpi::LogicalSize::new(200, 160);
 
     let window = tao::window::WindowBuilder::new()
         .with_title("Simple Stopwatch")
         .with_resizable(true)
-        .with_inner_size(tao::dpi::LogicalSize::new(200.0, 120.0))
-        .with_min_inner_size(tao::dpi::LogicalSize::new(200.0, 120.0));
+        .with_inner_size(MIN_SIZE)
+        .with_min_inner_size(MIN_SIZE);
 
     LaunchBuilder::new().with_cfg(
         Config::new()
             .with_window(window)
             .with_menu(None)
     ).launch(App);
-    // dioxus::launch(App);
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum TimerMode {
     Timer,
-    Stopwatch,
-    // Alarm
+    Stopwatch
 }
 
 impl TimerMode {
@@ -44,28 +47,95 @@ impl TimerMode {
             TimerMode::Stopwatch => 0,
         }
     }
+
+    fn win_title(&self) -> &str {
+        match *self {
+            TimerMode::Timer => "Simple Timer",
+            TimerMode::Stopwatch => "Simple Stopwatch",
+        }
+    }
 }
 
-#[component]
-fn App() -> Element {
-    let mode = use_signal(|| TimerMode::Timer);
-    // TODO: change window name based on mode
+#[derive(Debug, Display, Error)]
+struct InvalidEnumValue;
 
-    rsx! {
-        style {
-            { include_str!("../assets/main.css") }
-        }
-        StopwatchTimer {
-            mode: *mode.read()
+impl FromStr for TimerMode {
+    type Err = InvalidEnumValue;
+    
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value.to_lowercase().as_str() {
+            "timer" => Ok(TimerMode::Timer),
+            "stopwatch" => Ok(TimerMode::Stopwatch),
+            _ => Err(InvalidEnumValue)
         }
     }
 }
 
 #[component]
-fn StopwatchTimer(mode: TimerMode) -> Element {
-    let mut initial_dur = use_signal(|| mode.default_dur());
+fn App() -> Element {
+    let mut mode = use_signal(|| TimerMode::Stopwatch);
+    // ? is it even worth having this seperate?
+
+    use_effect(move || desktop::window().set_title(mode.read().win_title()));
+
+    let set_mode = move |event: Event<FormData>| {
+        mode.set(event.value().parse().unwrap());
+    };
+
+    rsx! {
+        style {{ include_str!("../assets/main.css") }}
+        div {
+            id: "mode-radio",
+            input {
+                r#type: "radio",
+                name: "mode",
+                value: "stopwatch",
+                id: "mode-stopwatch",
+                onchange: set_mode,
+                checked: true
+            }
+            label {
+                r#for: "mode-stopwatch",
+                span {
+                    class: "mat-icon",
+                    "timer"
+                }
+                span {
+                    "Stopwatch"
+                }
+            }
+            input {
+                r#type: "radio",
+                name: "mode",
+                value: "timer",
+                id: "mode-timer",
+                onchange: set_mode
+            }
+            label {
+                r#for: "mode-timer",
+                span {
+                    class: "mat-icon",
+                    "timelapse"
+                }
+                span {
+                    "Timer"
+                }
+            }
+        }
+        div {
+            id: "stopwatch-timer",
+            StopwatchTimer {
+                mode: mode
+            }
+        }
+    }
+}
+
+#[component]
+fn StopwatchTimer(mode: Signal<TimerMode>) -> Element {
+    let mut initial_dur = use_signal(|| mode.read().default_dur());
     let mut dur = use_signal(|| *initial_dur.peek());
-    let mut input_digits = use_signal(|| mode.default_digits());
+    let mut input_digits = use_signal(|| mode.read().default_digits());
     let mut runner: Signal<Option<Task>> = use_signal(|| None);
     let mut alarm: Signal<Option<Task>> = use_signal(|| None);
 
@@ -118,7 +188,7 @@ fn StopwatchTimer(mode: TimerMode) -> Element {
                 interval.tick().await;
                 loop {
                     interval.tick().await;
-                    match mode {
+                    match *mode.peek() {
                         TimerMode::Timer => {
                             dur -= Duration::from_secs(1);
                             if dur.peek().as_secs() == 0 {
@@ -144,16 +214,26 @@ fn StopwatchTimer(mode: TimerMode) -> Element {
                 if first.is_some_and(|c| c.is_ascii_digit()) {
                     let digit = first.unwrap().to_digit(10).unwrap();
                     let mut digits_write = input_digits.write();
-                    *digits_write = *digits_write * 10 + digit as u64;
-                    // TODO: use checked mul
-                    let digits_dur = dur_from_str(&format_digits(*digits_write)).unwrap();
+
+                    // In the event of an overflow, just keep the old value
+                    *digits_write = digits_write.checked_mul(10)
+                        .and_then(|d| d.checked_add(digit as u64))
+                        .unwrap_or(*digits_write);
+
+                    let digits_dur = dur_from_str(
+                        &format_digits(*digits_write)
+                    ).unwrap();
+
                     initial_dur.set(digits_dur);
                     dur.set(digits_dur);
                 }
             },
             Key::Backspace => {
                 input_digits /= 10;
-                let digits_dur = dur_from_str(&format_digits(*input_digits.peek())).unwrap();
+                let digits_dur = dur_from_str(
+                    &format_digits(*input_digits.peek())
+                ).unwrap();
+
                 initial_dur.set(digits_dur);
                 dur.set(digits_dur);
             },
@@ -161,6 +241,14 @@ fn StopwatchTimer(mode: TimerMode) -> Element {
             _ => ()
         }
     };
+
+    use_effect(move || {
+        // When mode changes, reset all values
+        initial_dur.set(mode.read().default_dur());
+        input_digits.set(mode.read().default_digits());
+        stop_alarm();
+        reset();
+    });
 
     rsx! {
         div {
@@ -173,7 +261,7 @@ fn StopwatchTimer(mode: TimerMode) -> Element {
                 tabindex: 0,
                 onkeydown: update_input,
                 oninput: move |_| reset(),
-                span { { format_dur(dur()) } }
+                span {{ format_dur(dur()) }}
             }
         }
         div {
