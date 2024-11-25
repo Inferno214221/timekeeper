@@ -6,7 +6,7 @@ Copyright (c) 2024+, Inferno214221
 (https://github.com/Inferno214221/simple-stopwatch-timer).
 
 This program is licensed under the GNU General Public License Version 3.
-See ./GPLv3.
+See [GPLv3](./GPLv3.)
 
 This progam includes a single audio file from another source.
 
