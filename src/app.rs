@@ -16,7 +16,7 @@ pub fn App() -> Element {
     };
 
     rsx! {
-        style {{ include_str!("../assets/main.css") }}
+        style {{ include_str!("./main.css") }}
         div {
             id: "mode-radio",
             input {

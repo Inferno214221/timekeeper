@@ -27,7 +27,7 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>) -> Element {
         alarm.set(Some(spawn(async move {
             let sl = Soloud::default().unwrap();
             let mut wav = audio::Wav::default();
-            wav.load_mem(include_bytes!("../assets/alarm.oga")).unwrap();
+            wav.load_mem(include_bytes!("./alarm.oga")).unwrap();
 
             sl.play(&wav);
             let mut interval = time::interval(Duration::from_millis(100));
