@@ -3,15 +3,14 @@ name = "timer-dioxus"
 version = "0.1.0"
 authors = ["Inferno214221 <inferno214221@gmail.com>"]
 edition = "2021"
+license = "GPL-3.0-or-later"
+license-file = "LICENSE.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-derive_more = { version = "1.0.0", features = ["display", "error"] }
-
 dioxus = { version = "0.5", features = ["desktop"] }
-
-# Debug
-dioxus-logger = "0.5.1"
-soloud = "1.0.5"
 tokio = { version = "1.41.1", features = ["full"] }
+soloud = "1.0.5"
+derive_more = { version = "1.0.0", features = ["display", "error"] }
+dioxus-logger = "0.5.1"
