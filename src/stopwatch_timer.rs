@@ -1,19 +1,31 @@
 use dioxus::prelude::*;
+use dioxus_logger::tracing::info;
 use tokio::time::{self, Duration, MissedTickBehavior};
 use soloud::*;
 
-use super::timer_mode::TimerMode;
-use super::utils::*;
+use crate::timer_mode::TimerMode;
+use crate::utils::*;
 
 #[component]
-pub fn StopwatchTimer(mode: Signal<TimerMode>) -> Element {
-    let mut initial_dur = use_signal(|| mode.read().default_dur());
+pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start: bool) -> Element {
+    let mut handled_args = use_signal(|| false);
+    let default_dur = move || {
+        if !*handled_args.peek() && let Some(val) = def_dur {
+            val
+        } else {
+            mode.read().default_dur()
+        }
+    };
+
+    let mut initial_dur = use_signal(default_dur);
     let mut dur = use_signal(|| *initial_dur.peek());
-    let mut input_digits = use_signal(|| mode.read().default_digits());
+    let mut input_digits = use_signal(|| digits_from_dur(default_dur()));
     let mut runner: Signal<Option<Task>> = use_signal(|| None);
     let mut alarm: Signal<Option<Task>> = use_signal(|| None);
+    
+    info!("render");
 
-    // A lot of closures are requried because they all need to capture values
+    // A lot of closures are required because they all need to capture values
 
     let mut stop_alarm = move || {
         let mut alarm_write = alarm.write();
@@ -62,6 +74,7 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>) -> Element {
                 interval.tick().await;
                 loop {
                     interval.tick().await;
+                    info!("tick");
                     match *mode.peek() {
                         TimerMode::Timer => {
                             dur -= Duration::from_secs(1);
@@ -117,17 +130,26 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>) -> Element {
     };
 
     use_effect(move || {
+        if !*handled_args.peek() {
+            handled_args.set(true);
+            return;
+        }
+        info!("use_effect");
         // When mode changes, reset all values
-        initial_dur.set(mode.read().default_dur());
-        input_digits.set(mode.read().default_digits());
+        initial_dur.set(default_dur());
+        input_digits.set(digits_from_dur(default_dur()));
         stop_alarm();
         reset();
     });
 
+    if !*handled_args.peek() && start {
+        start_pause();
+    }
+
     rsx! {
         div {
             id: "main-display",
-            class: "centered",
+            class: "centred",
             div {
                 autofocus: true,
                 id: "time-display",
@@ -139,7 +161,7 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>) -> Element {
             }
         }
         div {
-            class: "centered",
+            class: "centred",
             button {
                 class: "mat-icon",
                 onclick: move |_| start_pause(),

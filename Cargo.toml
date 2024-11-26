@@ -15,3 +15,4 @@ tokio = { version = "1.41.1", features = ["full"] }
 soloud = "1.0.5"
 derive_more = { version = "1.0.0", features = ["display", "error"] }
 dioxus-logger = "0.5.1"
+clap = { version = "4.5.21" }

@@ -1,17 +1,20 @@
+#![feature(let_chains)]
+
 use dioxus::prelude::*;
 use dioxus::desktop::{tao, Config};
+use dioxus_logger::tracing::Level;
 
+mod args;
 mod app;
 mod stopwatch_timer;
 mod timer_mode;
 mod utils;
 
+use args::get_args;
 use app::App;
 
-// TODO: add cli args
-
 fn main() {
-    // dioxus_logger::init(Level::INFO).expect("Logger initialisation failed");
+    dioxus_logger::init(Level::INFO).expect("Logger initialisation failed");
     const MIN_SIZE: tao::dpi::LogicalSize<u32> =
         tao::dpi::LogicalSize::new(200, 140);
 
@@ -25,5 +28,6 @@ fn main() {
         Config::new()
             .with_window(window)
             .with_menu(None)
-    ).launch(App);
+    ).with_context(get_args())
+        .launch(App);
 }

@@ -16,13 +16,6 @@ impl TimerMode {
         }
     }
 
-    pub fn default_digits(&self) -> u64 {
-        match *self {
-            TimerMode::Timer => 500,
-            TimerMode::Stopwatch => 0,
-        }
-    }
-
     pub fn win_title(&self) -> &str {
         match *self {
             TimerMode::Timer => "Simple Timer",

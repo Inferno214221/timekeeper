@@ -1,13 +1,16 @@
 use dioxus::prelude::*;
 use dioxus::desktop;
 
-use super::timer_mode::TimerMode;
-use super::stopwatch_timer::StopwatchTimer;
+
+use crate::timer_mode::TimerMode;
+use crate::stopwatch_timer::StopwatchTimer;
+use crate::args::Args;
 
 #[component]
 pub fn App() -> Element {
-    let mut mode = use_signal(|| TimerMode::Stopwatch);
-    // ? is it even worth having this seperate?
+    let context = use_context::<Args>();
+
+    let mut mode = use_signal(|| context.mode.unwrap_or(TimerMode::Stopwatch));
 
     use_effect(move || desktop::window().set_title(mode.read().win_title()));
 
@@ -17,48 +20,52 @@ pub fn App() -> Element {
 
     rsx! {
         style {{ include_str!("./main.css") }}
-        div {
-            id: "mode-radio",
-            input {
-                r#type: "radio",
-                name: "mode",
-                value: "stopwatch",
-                id: "mode-stopwatch",
-                onchange: set_mode,
-                checked: true
-            }
-            label {
-                r#for: "mode-stopwatch",
-                span {
-                    class: "mat-icon",
-                    "timer"
+        if context.mode.is_none() {
+            div {
+                id: "mode-radio",
+                input {
+                    r#type: "radio",
+                    name: "mode",
+                    value: "stopwatch",
+                    id: "mode-stopwatch",
+                    onchange: set_mode,
+                    checked: true
                 }
-                span {
-                    "Stopwatch"
+                label {
+                    r#for: "mode-stopwatch",
+                    span {
+                        class: "mat-icon",
+                        "timer"
+                    }
+                    span {
+                        "Stopwatch"
+                    }
                 }
-            }
-            input {
-                r#type: "radio",
-                name: "mode",
-                value: "timer",
-                id: "mode-timer",
-                onchange: set_mode
-            }
-            label {
-                r#for: "mode-timer",
-                span {
-                    class: "mat-icon",
-                    "timelapse"
+                input {
+                    r#type: "radio",
+                    name: "mode",
+                    value: "timer",
+                    id: "mode-timer",
+                    onchange: set_mode
                 }
-                span {
-                    "Timer"
+                label {
+                    r#for: "mode-timer",
+                    span {
+                        class: "mat-icon",
+                        "timelapse"
+                    }
+                    span {
+                        "Timer"
+                    }
                 }
             }
         }
         div {
             id: "stopwatch-timer",
             StopwatchTimer {
-                mode: mode
+                mode: mode,
+                def_dur: context.duration,
+                start: context.start
             }
         }
     }
