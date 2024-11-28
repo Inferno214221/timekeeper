@@ -3,7 +3,8 @@ use tokio::time::{self, Duration, MissedTickBehavior};
 use soloud::*;
 
 use crate::timer_mode::TimerMode;
-use crate::utils::*;
+use crate::digit::digit::*;
+use crate::digit::time_digits::*;
 
 #[component]
 pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start: bool) -> Element {
@@ -15,11 +16,10 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
             mode.read().default_dur()
         }
     };
-    // TODO: maybe make a digits type alias and then impl From and Into Duration
 
     let mut initial_dur = use_signal(default_dur);
     let mut dur = use_signal(|| *initial_dur.peek());
-    let mut input_digits = use_signal(|| digits_from_dur(default_dur()));
+    let mut input_digits = use_signal(|| TimeDigits::from(default_dur()));
     let mut runner: Signal<Option<Task>> = use_signal(|| None);
     let mut alarm: Signal<Option<Task>> = use_signal(|| None);
     
@@ -96,27 +96,22 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
             Key::Character(character) => {
                 let first = character.chars().next();
                 if first.is_some_and(|c| c.is_ascii_digit()) {
-                    let digit = first.unwrap().to_digit(10).unwrap();
+                    let digit = Digit::try_from(first.unwrap()).unwrap();
                     let mut digits_write = input_digits.write();
 
-                    // In the event of an overflow, just keep the old value
-                    *digits_write = digits_write.checked_mul(10)
-                        .and_then(|d| d.checked_add(digit as u64))
-                        .unwrap_or(*digits_write);
+                    digits_write.push(digit);
 
-                    let digits_dur = dur_from_str(
-                        &format_digits(*digits_write)
-                    ).unwrap();
+                    let digits_dur = Duration::try_from(&*digits_write).expect("Duration overflow");
 
                     initial_dur.set(digits_dur);
                     dur.set(digits_dur);
                 }
             },
             Key::Backspace => {
-                input_digits /= 10;
-                let digits_dur = dur_from_str(
-                    &format_digits(*input_digits.peek())
-                ).unwrap();
+                let mut digits_write = input_digits.write();
+                digits_write.pop();
+
+                let digits_dur = Duration::try_from(&*digits_write).expect("Duration overflow");
 
                 initial_dur.set(digits_dur);
                 dur.set(digits_dur);
@@ -133,7 +128,7 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
         }
         // When mode changes, reset all values
         initial_dur.set(default_dur());
-        input_digits.set(digits_from_dur(default_dur()));
+        input_digits.set(TimeDigits::from(default_dur()));
         stop_alarm();
         reset();
     });
@@ -153,7 +148,7 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
                 tabindex: 0,
                 onkeydown: update_input,
                 oninput: move |_| reset(),
-                span {{ format_dur(dur()) }}
+                span {{ TimeDigits::from(*dur.read()).to_string() }}
             }
         }
         div {

@@ -1,7 +1,6 @@
 use dioxus::prelude::*;
 use dioxus::desktop;
 
-
 use crate::timer_mode::TimerMode;
 use crate::stopwatch_timer::StopwatchTimer;
 use crate::args::Args;

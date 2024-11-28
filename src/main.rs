@@ -1,4 +1,5 @@
 #![feature(let_chains)]
+#![feature(iterator_try_reduce)]
 
 use dioxus::prelude::*;
 use dioxus::desktop::{tao, Config};
@@ -8,6 +9,7 @@ mod app;
 mod stopwatch_timer;
 mod timer_mode;
 mod utils;
+mod digit;
 
 use args::get_args;
 use app::App;
