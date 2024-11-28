@@ -8,7 +8,8 @@ use crate::{timer_mode::TimerMode, utils::{dur_from_alt_str, dur_from_str}};
 pub struct Args {
     pub mode: Option<TimerMode>,
     pub duration: Option<Duration>,
-    pub start: bool
+    pub start: bool,
+    pub always_on_top: bool
 }
 
 #[derive(Debug, Display, Error)]
@@ -35,7 +36,7 @@ pub fn get_args() -> Args {
         ).arg(
             Arg::new("TIMER")
                 .help("Launch the program in timer mode")
-                .short('t') // t / d
+                .short('t')
                 .long("timer")
                 .short_alias('d')
                 .alias("down")
@@ -46,7 +47,7 @@ pub fn get_args() -> Args {
                 .multiple(false)
         ).arg(
             Arg::new("DURATION")
-                .help("The initial duration of set the stopwatch / timer")
+                .help("The initial duration of set the stopwatch / timer (e.g. 1:00:00 or 1h)")
                 .action(ArgAction::Set)
                 .value_parser(|s: &str| {
                     dur_from_str(s)
@@ -61,14 +62,23 @@ pub fn get_args() -> Args {
                 .short_alias('r')
                 .alias("run")
                 .action(ArgAction::SetTrue)
+        ).arg(
+            Arg::new("KEEP_ON_TOP")
+                .help("Attempt to keep the window above others")
+                .short('k')
+                .long("keep-on-top")
+                .action(ArgAction::SetTrue)
         );
 
     let matches = command.get_matches();
 
     Args {
-        // Incorrect flags can't be passed so parse() can't fail
-        mode: matches.get_one::<Id>("MODE").and_then(|m| m.to_string().parse().ok()),
+        mode: matches.get_one::<Id>("MODE").map(
+            |m| m.to_string().parse()
+                .expect("Incorrect flags can't be passed so parse() can't fail")
+        ),
         duration: matches.get_one::<Duration>("DURATION").cloned(),
-        start: matches.get_flag("START")
+        start: matches.get_flag("START"),
+        always_on_top: matches.get_flag("KEEP_ON_TOP")
     }
 }

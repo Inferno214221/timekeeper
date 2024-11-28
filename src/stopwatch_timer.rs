@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_logger::tracing::info;
 use tokio::time::{self, Duration, MissedTickBehavior};
 use soloud::*;
 
@@ -16,6 +15,7 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
             mode.read().default_dur()
         }
     };
+    // TODO: maybe make a digits type alias and then impl From and Into Duration
 
     let mut initial_dur = use_signal(default_dur);
     let mut dur = use_signal(|| *initial_dur.peek());
@@ -23,8 +23,6 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
     let mut runner: Signal<Option<Task>> = use_signal(|| None);
     let mut alarm: Signal<Option<Task>> = use_signal(|| None);
     
-    info!("render");
-
     // A lot of closures are required because they all need to capture values
 
     let mut stop_alarm = move || {
@@ -74,7 +72,6 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
                 interval.tick().await;
                 loop {
                     interval.tick().await;
-                    info!("tick");
                     match *mode.peek() {
                         TimerMode::Timer => {
                             dur -= Duration::from_secs(1);
@@ -134,7 +131,6 @@ pub fn StopwatchTimer(mode: Signal<TimerMode>, def_dur: Option<Duration>, start:
             handled_args.set(true);
             return;
         }
-        info!("use_effect");
         // When mode changes, reset all values
         initial_dur.set(default_dur());
         input_digits.set(digits_from_dur(default_dur()));
