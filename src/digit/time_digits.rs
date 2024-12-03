@@ -39,7 +39,6 @@ impl Display for TimeDigits {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.hours.is_zero() {
             if self.mins.is_zero() {
-                
                 write!(f, "{}", trim_zeros(&self.secs.to_string()))
             } else {
                 write!(f, "{}:{:0>2}", trim_zeros(&self.mins.to_string()), self.secs)

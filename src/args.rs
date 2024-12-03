@@ -9,7 +9,8 @@ pub struct Args {
     pub mode: Option<TimerMode>,
     pub duration: Option<Duration>,
     pub start: bool,
-    pub always_on_top: bool
+    pub always_on_top: bool,
+    pub follow_workspace: bool
 }
 
 #[derive(Debug, Display, Error)]
@@ -30,16 +31,16 @@ pub fn get_args() -> Args {
                 .help("Launch the program in stopwatch mode")
                 .short('w')
                 .long("stopwatch")
-                .short_alias('u')
-                .alias("up")
+                .visible_short_alias('u')
+                .visible_alias("up")
                 .action(ArgAction::SetTrue)
         ).arg(
             Arg::new("TIMER")
                 .help("Launch the program in timer mode")
                 .short('t')
                 .long("timer")
-                .short_alias('d')
-                .alias("down")
+                .visible_short_alias('d')
+                .visible_alias("down")
                 .action(ArgAction::SetTrue)
         ).group(
             ArgGroup::new("MODE")
@@ -59,14 +60,20 @@ pub fn get_args() -> Args {
                 .help("Start the stopwatch / timer immediately")
                 .short('s')
                 .long("start")
-                .short_alias('r')
-                .alias("run")
+                .visible_short_alias('r')
+                .visible_alias("run")
                 .action(ArgAction::SetTrue)
         ).arg(
             Arg::new("KEEP_ON_TOP")
                 .help("Attempt to keep the window above others")
                 .short('k')
                 .long("keep-on-top")
+                .action(ArgAction::SetTrue)
+        ).arg(
+            Arg::new("FOLLOW_WORKSPACE")
+                .help("Attempt to keep the window on the current workspace at all times")
+                .short('f')
+                .long("follow-workspaces")
                 .action(ArgAction::SetTrue)
         );
 
@@ -79,6 +86,7 @@ pub fn get_args() -> Args {
         ),
         duration: matches.get_one::<Duration>("DURATION").cloned(),
         start: matches.get_flag("START"),
-        always_on_top: matches.get_flag("KEEP_ON_TOP")
+        always_on_top: matches.get_flag("KEEP_ON_TOP"),
+        follow_workspace: matches.get_flag("FOLLOW_WORKSPACE")
     }
 }

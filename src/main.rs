@@ -2,7 +2,7 @@
 #![feature(iterator_try_reduce)]
 
 use dioxus::prelude::*;
-use dioxus::desktop::{tao, Config};
+use dioxus::desktop::{tao::{dpi::LogicalSize, window::WindowBuilder}, Config};
 
 mod args;
 mod app;
@@ -18,21 +18,26 @@ fn main() {
     // dioxus_logger::init(dioxus_logger::tracing::Level::INFO)
     //     .expect("Logger initialisation failed");
 
-    const MIN_SIZE: tao::dpi::LogicalSize<u32> = tao::dpi::LogicalSize::new(200, 140);
+    const MIN_SIZE: LogicalSize<u32> = LogicalSize::new(200, 140);
     
     let args = get_args();
 
-    let window = tao::window::WindowBuilder::new()
+    let window = WindowBuilder::new()
         .with_title("Simple Stopwatch")
         .with_resizable(true)
         .with_inner_size(MIN_SIZE)
-        .with_min_inner_size(MIN_SIZE).
-        with_always_on_top(args.always_on_top);
+        .with_min_inner_size(MIN_SIZE)
+        .with_always_on_top(args.always_on_top)
+        .with_visible_on_all_workspaces(args.follow_workspace);
+    // TODO: timer pauses when minimised or on another desktop
 
-    LaunchBuilder::new().with_cfg(
-        Config::new()
-            .with_window(window)
-            .with_menu(None)
-    ).with_context(args)
+    let config = Config::new()
+        .with_window(window)
+        .with_menu(None)
+        .with_disable_context_menu(true);
+
+    LaunchBuilder::new()
+        .with_cfg(config)
+        .with_context(args)
         .launch(App);
 }

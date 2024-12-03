@@ -1,7 +1,7 @@
 [application]
 
 # App (Project) Name
-name = "timer-dioxus"
+name = "simple-stopwatch-timer"
 
 # Dioxus App Default Platform
 # web, desktop, fullstack
@@ -11,12 +11,12 @@ default_platform = "desktop"
 out_dir = "dist"
 
 # assets file folder
-asset_dir = "assets"
+# asset_dir = "assets"
 
 [web.app]
 
 # HTML title tag content
-title = "timer-dioxus"
+title = "simple-stopwatch-timer"
 
 [web.watcher]
 
@@ -30,7 +30,6 @@ watch_path = ["src", "assets"]
 [web.resource]
 
 # CSS style file
-
 style = []
 
 # Javascript code file
