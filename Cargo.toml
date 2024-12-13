@@ -10,9 +10,8 @@ repository = "https://github.com/Inferno214221/timekeeper"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = { version = "0.5", features = ["desktop"] }
+dioxus = { version = "0.6", features = ["desktop"] }
 tokio = { version = "1.41.1", features = ["full"] }
 soloud = "1.0.5"
 derive_more = { version = "1.0.0", features = ["display", "error"] }
-dioxus-logger = "0.5.1"
 clap = { version = "4.5.21" }

@@ -15,7 +15,7 @@ pub fn App() -> Element {
     };
 
     rsx! {
-        style {{ include_str!("./main.css") }}
+        style {{ include_str!("../assets/main.css") }}
         if context.mode.is_none() {
             div {
                 id: "mode-radio",

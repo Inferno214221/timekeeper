@@ -15,9 +15,6 @@ use args::get_args;
 use app::App;
 
 fn main() {
-    // dioxus_logger::init(dioxus_logger::tracing::Level::INFO)
-    //     .expect("Logger initialisation failed");
-
     const MIN_SIZE: LogicalSize<u32> = LogicalSize::new(200, 140);
     
     let args = get_args();
