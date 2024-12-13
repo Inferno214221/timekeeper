@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=0.2.0
+Type=Application
+Name=TimeKeeper
+Comment=
+Exec=timekeeper
+Icon=alarm-timer
+Path=
+Terminal=false
+StartupNotify=false

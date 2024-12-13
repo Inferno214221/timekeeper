@@ -3584,18 +3584,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
-name = "simple-stopwatch-timer"
-version = "0.1.0"
-dependencies = [
- "clap",
- "derive_more 1.0.0",
- "dioxus",
- "dioxus-logger",
- "soloud",
- "tokio",
-]
-
-[[package]]
 name = "siphasher"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3933,6 +3921,18 @@ checksum = "8b9ef9bad013ada3808854ceac7b46812a6465ba368859a37e2100283d2d719c"
 dependencies = [
  "cfg-if",
  "once_cell",
+]
+
+[[package]]
+name = "timekeeper"
+version = "0.2.0"
+dependencies = [
+ "clap",
+ "derive_more 1.0.0",
+ "dioxus",
+ "dioxus-logger",
+ "soloud",
+ "tokio",
 ]
 
 [[package]]

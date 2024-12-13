@@ -23,13 +23,13 @@ fn main() {
     let args = get_args();
 
     let window = WindowBuilder::new()
-        .with_title("Simple Stopwatch")
+        .with_title("TimeKeeper")
         .with_resizable(true)
         .with_inner_size(MIN_SIZE)
         .with_min_inner_size(MIN_SIZE)
         .with_always_on_top(args.always_on_top)
         .with_visible_on_all_workspaces(args.follow_workspace);
-    // TODO: timer pauses when minimised or on another desktop
+    // TODO: timer pauses when minimised or on another desktop - is that an XFCE issue?
 
     let config = Config::new()
         .with_window(window)

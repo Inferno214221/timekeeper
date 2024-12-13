@@ -17,15 +17,17 @@ pub struct Args {
 pub struct DurationParseError;
 
 pub fn get_args() -> Args {
-    let command = Command::new("simple-stopwatch-timer")
+    let command = Command::new("timekeeper")
         .author("Inferno214221")
         .version("0.1.0")
         .about("A simple stopwatch / timer with a GUI written in Rust using Dioxus.")
         .disable_version_flag(true)
         .arg(
-            Arg::new("VERSION").help(
-                "Print version"
-            ).short('v').long("version").action(ArgAction::Version)
+            Arg::new("VERSION")
+            .help("Print version")
+            .short('v')
+            .long("version")
+            .action(ArgAction::Version)
         ).arg(
             Arg::new("STOPWATCH")
                 .help("Launch the program in stopwatch mode")

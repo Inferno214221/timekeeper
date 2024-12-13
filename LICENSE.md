@@ -1,9 +1,9 @@
 # License information
 
-## Simple Stopwatch / Timer
+## TimeKeeper
 
 Copyright (c) 2024+, Inferno214221
-(https://github.com/Inferno214221/simple-stopwatch-timer).
+(https://github.com/Inferno214221/timekeeper).
 
 This program is licensed under the GNU General Public License Version 3.
 See [GPLv3](./GPLv3.)

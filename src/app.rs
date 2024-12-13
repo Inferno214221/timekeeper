@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus::desktop;
 
 use crate::timer_mode::TimerMode;
 use crate::stopwatch_timer::StopwatchTimer;
@@ -10,8 +9,6 @@ pub fn App() -> Element {
     let context = use_context::<Args>();
 
     let mut mode = use_signal(|| context.mode.unwrap_or(TimerMode::Stopwatch));
-
-    use_effect(move || desktop::window().set_title(mode.read().win_title()));
 
     let set_mode = move |event: Event<FormData>| {
         mode.set(event.value().parse().unwrap());

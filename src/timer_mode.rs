@@ -15,13 +15,6 @@ impl TimerMode {
             TimerMode::Stopwatch => Duration::ZERO,
         }
     }
-
-    pub fn win_title(&self) -> &str {
-        match *self {
-            TimerMode::Timer => "Simple Timer",
-            TimerMode::Stopwatch => "Simple Stopwatch",
-        }
-    }
 }
 
 #[derive(Debug, Display, Error)]
