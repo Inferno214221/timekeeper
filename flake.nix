@@ -29,6 +29,7 @@
           gcc
           git
           cmake
+          dioxus-cli
         ] ++ buildInputs;
       in
       {
