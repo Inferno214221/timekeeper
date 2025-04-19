@@ -46,8 +46,9 @@
 
           inherit buildInputs nativeBuildInputs;
 
-          postInstallPhase = ''
-            cp ./timekeeper.desktop $out/share/applications/timekeeper.desktop
+          postInstall = ''
+            mkdir -p $out/share/applications
+            cp $src/timekeeper.desktop $out/share/applications/timekeeper.desktop
           '';
 
           meta = {
