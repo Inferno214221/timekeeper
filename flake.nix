@@ -14,6 +14,7 @@
         pkgs = import nixpkgs {
           inherit system overlays;
         };
+        rustVersion = "2025-04-21";
         buildInputs = with pkgs; [
           glibc
           cairo
@@ -22,7 +23,7 @@
           xdotool
         ];
         nativeBuildInputs = with pkgs; [
-          (rust-bin.nightly.latest.default.override {
+          (rust-bin.nightly."${rustVersion}".default.override {
             extensions = [ "rust-src" ];
           })
           pkg-config
@@ -39,11 +40,11 @@
 
         packages.default = with pkgs; rustPlatform.buildRustPackage rec {
           pname = "timekeeper";
-          version = "v0.2.0";
+          version = "0.2.0";
           
           src = ./.;
 
-          cargoHash = "sha256-/1cA5WHZyE0Xxw6FHSNUp4Aq3A0b9gYya8WpZpJdVtI=";
+          cargoHash = "sha256-pTufUdJoz8ql2m5bxQtIF3yQw4EMeY57WXNeuRZ2W9I=";
 
           inherit buildInputs nativeBuildInputs;
 
