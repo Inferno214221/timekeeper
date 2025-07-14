@@ -12,3 +12,4 @@
 **/*.rs.bk
 
 .direnv/
+result

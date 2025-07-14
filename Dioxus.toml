@@ -1,7 +1,7 @@
 [application]
 
 # App (Project) Name
-name = "simple-stopwatch-timer"
+name = "timekeeper"
 
 # Dioxus App Default Platform
 # web, desktop, fullstack
@@ -16,7 +16,7 @@ out_dir = "dist"
 [web.app]
 
 # HTML title tag content
-title = "simple-stopwatch-timer"
+title = "timekeeper"
 
 [web.watcher]
 
